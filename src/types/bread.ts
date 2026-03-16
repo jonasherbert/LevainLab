@@ -9,7 +9,8 @@ export interface SoakerComponent {
 
 export interface Starter {
   percent: number
-  hydration: number
+  water: number
+  flour: number
   reserve: number
 }
 

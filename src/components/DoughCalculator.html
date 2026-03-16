@@ -1,4 +1,4 @@
-<v-container class="max-w-xl" style="background: transparent">
+<v-container class="max-w-xl">
   <v-card class="mb-4" color="surface" variant="elevated">
     <v-card-title class="text-primary">Base</v-card-title>
     <v-card-text>
@@ -24,7 +24,7 @@
   </v-card>
 
   <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Flavor & Lift</v-card-title>
+    <v-card-title class="text-primary">Starter</v-card-title>
     <v-card-text>
       <v-text-field
         label="Sourdough Percentage (%)"
@@ -37,11 +37,20 @@
         variant="outlined"
       />
       <v-text-field
-        label="Sourdough Hydration (%)"
+        label="Parts water"
         type="number"
         step="1"
         min="0"
-        v-model.number="store.starter.hydration"
+        v-model.number="store.starter.water"
+        density="compact"
+        variant="outlined"
+      />
+      <v-text-field
+        label="Parts flour"
+        type="number"
+        step="1"
+        min="0"
+        v-model.number="store.starter.flour"
         density="compact"
         variant="outlined"
       />
@@ -53,6 +62,12 @@
         density="compact"
         variant="outlined"
       />
+    </v-card-text>
+  </v-card>
+
+  <v-card class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Flavor & Lift</v-card-title>
+    <v-card-text>
       <v-text-field
         label="Salt (%)"
         type="number"
@@ -104,7 +119,7 @@
             hide-details
             class="mb-3"
           />
-          <v-row dense>
+          <v-row density="comfortable">
             <v-col cols="6">
               <v-text-field
                 label="Dry ingredient (g)"
@@ -140,8 +155,7 @@
   <v-card class="mb-4" color="surface" variant="elevated">
     <v-card-title class="text-primary">Starter Feeding</v-card-title>
     <v-card-subtitle class="text-primary"
-      >Prepare {{ result.starterFeeding.total.toFixed(0) }} g starter the day
-      before</v-card-subtitle
+      >Prepare {{ result.starterFeeding.seed.toFixed(0) }} g starter the day before</v-card-subtitle
     >
     <v-card-text>
       <v-table density="compact">
@@ -164,11 +178,11 @@
           </tr>
           <tr class="text-medium-emphasis">
             <td>Use for recipe</td>
-            <td class="text-right">{{ result.starterWeight.toFixed(0) }} g</td>
+            <td class="text-right">{{ result.starterFeeding.forRecipe.toFixed(0) }} g</td>
           </tr>
           <tr class="text-medium-emphasis">
             <td>Keep as reserve</td>
-            <td class="text-right">{{ result.starterFeeding.seed.toFixed(0) }} g</td>
+            <td class="text-right">{{ store.starter.reserve }} g</td>
           </tr>
         </tbody>
       </v-table>

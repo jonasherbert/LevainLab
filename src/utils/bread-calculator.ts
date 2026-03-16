@@ -6,12 +6,30 @@ const starterFlourWater = (weight: number, hydration: number) => {
   return { flour, water }
 }
 
-export const calculateDough = (state: DoughState) => {
-  const starterWeight = state.totalFlour * (state.starter.percent / 100)
-  const starter = starterFlourWater(starterWeight, state.starter.hydration / 100)
+const calculateHydrationFromParts = (flourParts: number, waterParts: number) => {
+  if (flourParts === 0) throw new Error('Flour parts cannot be zero')
+  return (waterParts / flourParts) * 100
+}
 
-  let flourUsed = starter.flour
-  let waterUsed = starter.water
+const calculateStarterSeed = (weight: number, flourParts: number, waterParts: number) => {
+  const totalParts = flourParts + waterParts + 1
+
+  return weight / totalParts
+}
+
+export const calculateDough = (state: DoughState) => {
+  const starterWeight = state.totalFlour * (state.starter.percent / 100) + state.starter.reserve
+  // const starterHydration = calculateHydrationFromParts(state.starter.flour, state.starter.water)
+  // const starter = starterFlourWater(starterWeight, starterHydration / 100)
+
+  const feedSeed = calculateStarterSeed(starterWeight, state.starter.flour, state.starter.water)
+  const starterForRecipe = starterWeight - state.starter.reserve
+
+  const feedFlour = feedSeed * state.starter.flour
+  const feedWater = feedSeed * state.starter.water
+
+  let flourUsed = feedFlour
+  let waterUsed = feedWater
 
   for (const s of state.soakers) {
     flourUsed += s.flour
@@ -24,16 +42,11 @@ export const calculateDough = (state: DoughState) => {
   const flourMain = totalFlour - flourUsed
   const waterMain = targetWater - waterUsed
 
-  const feedTotal = starterWeight + state.starter.reserve
-  const feedSeed = state.starter.reserve
-  const feedAmount = feedTotal - feedSeed
-  const feedFlour = feedAmount / (1 + state.starter.hydration / 100)
-  const feedWater = feedAmount - feedFlour
-
   return {
     starterWeight,
     starterFeeding: {
-      total: feedTotal,
+      total: starterWeight,
+      forRecipe: starterForRecipe,
       seed: feedSeed,
       flour: feedFlour,
       water: feedWater,

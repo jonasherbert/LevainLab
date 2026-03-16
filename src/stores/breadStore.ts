@@ -13,7 +13,8 @@ export const useBreadStore = defineStore('bread', {
 
     starter: {
       percent: 20,
-      hydration: 60,
+      flour: 5,
+      water: 3,
       reserve: 25,
     },
 
