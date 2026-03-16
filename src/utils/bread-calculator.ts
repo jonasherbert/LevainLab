@@ -1,16 +1,5 @@
 import type { DoughState } from '@/types/bread'
 
-const starterFlourWater = (weight: number, hydration: number) => {
-  const flour = weight / (1 + hydration)
-  const water = weight - flour
-  return { flour, water }
-}
-
-const calculateHydrationFromParts = (flourParts: number, waterParts: number) => {
-  if (flourParts === 0) throw new Error('Flour parts cannot be zero')
-  return (waterParts / flourParts) * 100
-}
-
 const calculateStarterSeed = (weight: number, flourParts: number, waterParts: number) => {
   const totalParts = flourParts + waterParts + 1
 
@@ -19,8 +8,6 @@ const calculateStarterSeed = (weight: number, flourParts: number, waterParts: nu
 
 export const calculateDough = (state: DoughState) => {
   const starterWeight = state.totalFlour * (state.starter.percent / 100) + state.starter.reserve
-  // const starterHydration = calculateHydrationFromParts(state.starter.flour, state.starter.water)
-  // const starter = starterFlourWater(starterWeight, starterHydration / 100)
 
   const feedSeed = calculateStarterSeed(starterWeight, state.starter.flour, state.starter.water)
   const starterForRecipe = starterWeight - state.starter.reserve
