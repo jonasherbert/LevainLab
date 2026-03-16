@@ -1,0 +1,176 @@
+<v-container class="max-w-xl" style="background: transparent">
+  <v-card class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Base</v-card-title>
+    <v-card-text>
+      <v-text-field
+        label="Total Flour (g)"
+        type="number"
+        min="0"
+        v-model.number="store.totalFlour"
+        density="compact"
+        variant="outlined"
+      />
+      <v-text-field
+        label="Target Hydration (%)"
+        type="number"
+        step="1"
+        min="0"
+        max="100"
+        v-model.number="store.targetHydration"
+        density="compact"
+        variant="outlined"
+      />
+    </v-card-text>
+  </v-card>
+
+  <v-card class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Flavor & Lift</v-card-title>
+    <v-card-text>
+      <v-text-field
+        label="Sourdough Percentage (%)"
+        type="number"
+        step="1"
+        min="0"
+        max="100"
+        v-model.number="store.starter.percent"
+        density="compact"
+        variant="outlined"
+      />
+      <v-text-field
+        label="Sourdough Hydration (%)"
+        type="number"
+        step="1"
+        min="0"
+        v-model.number="store.starter.hydration"
+        density="compact"
+        variant="outlined"
+      />
+      <div class="d-flex justify-end mb-4 mt-n2">
+        <v-chip prepend-icon="mdi-scale" variant="tonal" color="primary" size="small">
+          {{ result.starterWeight.toFixed(0) }} g
+        </v-chip>
+      </div>
+      <v-text-field
+        label="Salt (%)"
+        type="number"
+        step="0.1"
+        min="0"
+        v-model.number="store.saltPercent"
+        density="compact"
+        variant="outlined"
+      />
+      <v-text-field
+        label="Yeast (%)"
+        type="number"
+        step="0.1"
+        min="0"
+        v-model.number="store.yeastPercent"
+        density="compact"
+        variant="outlined"
+      />
+      <v-text-field
+        label="Malt (%)"
+        type="number"
+        step="0.1"
+        min="0"
+        v-model.number="store.maltPercent"
+        density="compact"
+        variant="outlined"
+      />
+    </v-card-text>
+  </v-card>
+
+  <v-card class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Soakers</v-card-title>
+    <v-card-subtitle>Cooked, soaked or hydrated ingredients</v-card-subtitle>
+    <v-card-text>
+      <v-card
+        v-for="(s, index) in store.soakers"
+        :key="s.id"
+        class="mb-3"
+        color="background"
+        variant="flat"
+      >
+        <v-card-text>
+          <v-select
+            :items="soakerKinds"
+            v-model="s.kind"
+            label="Type"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mb-3"
+          />
+          <v-row dense>
+            <v-col cols="6">
+              <v-text-field
+                label="Dry ingredient (g)"
+                type="number"
+                v-model.number="s.flour"
+                density="compact"
+                variant="outlined"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                label="Water (g)"
+                type="number"
+                v-model.number="s.water"
+                density="compact"
+                variant="outlined"
+              />
+            </v-col>
+          </v-row>
+          <div class="d-flex justify-end mt-n2">
+            <v-btn size="small" variant="text" color="error" @click="store.removeSoaker(s.id)">
+              Remove
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+      <v-btn color="secondary" variant="tonal" @click="addSoaker()">+ Soaker</v-btn>
+    </v-card-text>
+  </v-card>
+
+  <v-card color="surface" variant="elevated">
+    <v-card-title class="text-primary">Main Dough</v-card-title>
+    <v-card-text>
+      <v-table density="compact">
+        <tbody>
+          <tr>
+            <td>Flour</td>
+            <td class="text-right">{{ result.flourMain.toFixed(0) }} g</td>
+          </tr>
+          <tr>
+            <td>Water</td>
+            <td class="text-right">{{ result.waterMain.toFixed(0) }} g</td>
+          </tr>
+          <tr>
+            <td>Starter</td>
+            <td class="text-right">{{ result.starterWeight.toFixed(0) }} g</td>
+          </tr>
+          <tr v-for="(s, index) in store.soakers" :key="s.id">
+            <td>{{ s.kind }} Soaker{{ store.soakers.length > 1 ? ` ${index + 1}` : '' }}</td>
+            <td class="text-right">{{ (s.flour + s.water).toFixed(0) }} g</td>
+          </tr>
+          <tr>
+            <td>Salt</td>
+            <td class="text-right">{{ result.salt.toFixed(1) }} g</td>
+          </tr>
+          <tr>
+            <td>Yeast</td>
+            <td class="text-right">{{ result.yeast.toFixed(1) }} g</td>
+          </tr>
+          <tr>
+            <td>Malt</td>
+            <td class="text-right">{{ result.malt.toFixed(1) }} g</td>
+          </tr>
+          <tr class="font-weight-bold">
+            <td>Effective Hydration</td>
+            <td class="text-right">{{ (result.effectiveHydration * 100).toFixed(1) }}%</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-text>
+  </v-card>
+</v-container>
