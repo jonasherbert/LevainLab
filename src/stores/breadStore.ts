@@ -14,6 +14,7 @@ export const useBreadStore = defineStore('bread', {
     starter: {
       percent: 20,
       hydration: 60,
+      reserve: 25,
     },
 
     soakers: [],

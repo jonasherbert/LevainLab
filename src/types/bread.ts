@@ -10,6 +10,7 @@ export interface SoakerComponent {
 export interface Starter {
   percent: number
   hydration: number
+  reserve: number
 }
 
 export interface DoughState {

@@ -45,11 +45,14 @@
         density="compact"
         variant="outlined"
       />
-      <div class="d-flex justify-end mb-4 mt-n2">
-        <v-chip prepend-icon="mdi-scale" variant="tonal" color="primary" size="small">
-          {{ result.starterWeight.toFixed(0) }} g
-        </v-chip>
-      </div>
+      <v-text-field
+        label="Reserve for next feeding (g)"
+        type="number"
+        min="0"
+        v-model.number="store.starter.reserve"
+        density="compact"
+        variant="outlined"
+      />
       <v-text-field
         label="Salt (%)"
         type="number"
@@ -82,7 +85,7 @@
 
   <v-card class="mb-4" color="surface" variant="elevated">
     <v-card-title class="text-primary">Soakers</v-card-title>
-    <v-card-subtitle>Cooked, soaked or hydrated ingredients</v-card-subtitle>
+    <v-card-subtitle class="text-primary">Cooked, soaked or hydrated ingredients</v-card-subtitle>
     <v-card-text>
       <v-card
         v-for="(s, index) in store.soakers"
@@ -128,45 +131,87 @@
           </div>
         </v-card-text>
       </v-card>
-      <v-btn color="secondary" variant="tonal" @click="addSoaker()">+ Soaker</v-btn>
     </v-card-text>
+    <v-card-actions>
+      <v-btn color="secondary" variant="tonal" @click="addSoaker()">+ Soaker</v-btn>
+    </v-card-actions>
   </v-card>
 
-  <v-card color="surface" variant="elevated">
-    <v-card-title class="text-primary">Main Dough</v-card-title>
+  <v-card class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Starter Feeding</v-card-title>
+    <v-card-subtitle class="text-primary"
+      >Prepare {{ result.starterFeeding.total.toFixed(0) }} g starter the day
+      before</v-card-subtitle
+    >
     <v-card-text>
       <v-table density="compact">
         <tbody>
           <tr>
+            <td>Seed (old starter)</td>
+            <td class="text-right">{{ result.starterFeeding.seed.toFixed(0) }} g</td>
+          </tr>
+          <tr>
             <td>Flour</td>
-            <td class="text-right">{{ result.flourMain.toFixed(0) }} g</td>
+            <td class="text-right">{{ result.starterFeeding.flour.toFixed(0) }} g</td>
           </tr>
           <tr>
             <td>Water</td>
+            <td class="text-right">{{ result.starterFeeding.water.toFixed(0) }} g</td>
+          </tr>
+          <tr class="font-weight-bold">
+            <td>Total</td>
+            <td class="text-right">{{ result.starterFeeding.total.toFixed(0) }} g</td>
+          </tr>
+          <tr class="text-medium-emphasis">
+            <td>Use for recipe</td>
+            <td class="text-right">{{ result.starterWeight.toFixed(0) }} g</td>
+          </tr>
+          <tr class="text-medium-emphasis">
+            <td>Keep as reserve</td>
+            <td class="text-right">{{ result.starterFeeding.seed.toFixed(0) }} g</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-text>
+  </v-card>
+
+  <v-card color="surface" variant="elevated">
+    <v-card-title class="text-primary text-high-emphasis">Main Dough</v-card-title>
+    <v-card-text>
+      <v-table density="compact">
+        <tbody>
+          <tr>
+            <td class="text-high-emphasis">Flour</td>
+            <td class="text-right">{{ result.flourMain.toFixed(0) }} g</td>
+          </tr>
+          <tr>
+            <td class="text-high-emphasis">Water</td>
             <td class="text-right">{{ result.waterMain.toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td>Starter</td>
+            <td class="text-high-emphasis">Starter</td>
             <td class="text-right">{{ result.starterWeight.toFixed(0) }} g</td>
           </tr>
           <tr v-for="(s, index) in store.soakers" :key="s.id">
-            <td>{{ s.kind }} Soaker{{ store.soakers.length > 1 ? ` ${index + 1}` : '' }}</td>
+            <td class="text-high-emphasis">
+              {{ s.kind }} Soaker{{ store.soakers.length > 1 ? ` ${index + 1}` : '' }}
+            </td>
             <td class="text-right">{{ (s.flour + s.water).toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td>Salt</td>
+            <td class="text-high-emphasis">Salt</td>
             <td class="text-right">{{ result.salt.toFixed(1) }} g</td>
           </tr>
           <tr>
-            <td>Yeast</td>
+            <td class="text-high-emphasis">Yeast</td>
             <td class="text-right">{{ result.yeast.toFixed(1) }} g</td>
           </tr>
           <tr>
-            <td>Malt</td>
+            <td class="text-high-emphasis">Malt</td>
             <td class="text-right">{{ result.malt.toFixed(1) }} g</td>
           </tr>
           <tr class="font-weight-bold">
-            <td>Effective Hydration</td>
+            <td class="text-high-emphasis">Effective Hydration</td>
             <td class="text-right">{{ (result.effectiveHydration * 100).toFixed(1) }}%</td>
           </tr>
         </tbody>

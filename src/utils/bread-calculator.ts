@@ -24,8 +24,20 @@ export const calculateDough = (state: DoughState) => {
   const flourMain = totalFlour - flourUsed
   const waterMain = targetWater - waterUsed
 
+  const feedTotal = starterWeight + state.starter.reserve
+  const feedSeed = state.starter.reserve
+  const feedAmount = feedTotal - feedSeed
+  const feedFlour = feedAmount / (1 + state.starter.hydration / 100)
+  const feedWater = feedAmount - feedFlour
+
   return {
     starterWeight,
+    starterFeeding: {
+      total: feedTotal,
+      seed: feedSeed,
+      flour: feedFlour,
+      water: feedWater,
+    },
     flourMain,
     waterMain,
     salt: totalFlour * (state.saltPercent / 100),
