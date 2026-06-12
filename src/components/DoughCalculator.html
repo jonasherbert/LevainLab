@@ -1,9 +1,9 @@
-<v-container class="max-w-xl">
+<v-container max-width="576">
   <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Base</v-card-title>
+    <v-card-title class="text-primary">Basis</v-card-title>
     <v-card-text>
       <v-text-field
-        label="Total Flour (g)"
+        label="Gesamtmehl (g)"
         type="number"
         min="0"
         v-model.number="store.totalFlour"
@@ -11,7 +11,7 @@
         variant="outlined"
       />
       <v-text-field
-        label="Target Hydration (%)"
+        label="Hydration (%)"
         type="number"
         step="1"
         min="0"
@@ -24,52 +24,133 @@
   </v-card>
 
   <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Starter</v-card-title>
+    <v-card-title class="text-primary">Sauerteig</v-card-title>
     <v-card-text>
-      <v-text-field
-        label="Sourdough Percentage (%)"
-        type="number"
-        step="1"
-        min="0"
-        max="100"
-        v-model.number="store.starter.percent"
+      <v-switch
+        v-model="store.fermentation.mode"
+        true-value="time"
+        false-value="manual"
+        label="Fermentationszeit berechnen"
         density="compact"
-        variant="outlined"
+        color="primary"
+        hide-details
+        class="mb-3"
       />
-      <v-text-field
-        label="Parts water"
-        type="number"
-        step="1"
-        min="0"
-        v-model.number="store.starter.water"
-        density="compact"
-        variant="outlined"
-      />
-      <v-text-field
-        label="Parts flour"
-        type="number"
-        step="1"
-        min="0"
-        v-model.number="store.starter.flour"
-        density="compact"
-        variant="outlined"
-      />
-      <v-text-field
-        label="Reserve for next feeding (g)"
-        type="number"
-        min="0"
-        v-model.number="store.starter.reserve"
-        density="compact"
-        variant="outlined"
-      />
+
+      <template v-if="store.fermentation.mode === 'manual'">
+        <v-text-field
+          label="Versäuerungsgrad (%)"
+          type="number"
+          step="1"
+          min="0"
+          max="100"
+          v-model.number="store.starter.percent"
+          density="compact"
+          variant="outlined"
+        />
+      </template>
+
+      <template v-else>
+        <div class="text-body-2 text-medium-emphasis mb-3">
+          Versäuerungsgrad: {{ fermentationLeavening.starterPercent.toFixed(1) }}%
+        </div>
+        <v-row density="comfortable">
+          <v-col cols="6">
+            <v-text-field
+              label="Raumgare (h)"
+              type="number"
+              step="0.5"
+              min="0"
+              v-model.number="store.fermentation.roomHours"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              label="Raumtemperatur (°C)"
+              type="number"
+              step="1"
+              v-model.number="store.fermentation.roomTemp"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+        </v-row>
+        <v-row density="comfortable">
+          <v-col cols="6">
+            <v-text-field
+              label="Kühlschrankgare (h)"
+              type="number"
+              step="0.5"
+              min="0"
+              v-model.number="store.fermentation.fridgeHours"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              label="Kühlschranktemperatur (°C)"
+              type="number"
+              step="1"
+              v-model.number="store.fermentation.fridgeTemp"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+        </v-row>
+        <v-select
+          :items="leaveningItems"
+          v-model="store.fermentation.leaveningContribution"
+          label="Triebmittel"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3"
+        />
+      </template>
+
+      <template v-if="!(store.fermentation.mode === 'time' && store.fermentation.leaveningContribution === 0)">
+        <v-text-field
+          label="Teile Wasser"
+          type="number"
+          step="1"
+          min="0"
+          v-model.number="store.starter.water"
+          density="compact"
+          variant="outlined"
+        />
+        <v-text-field
+          label="Teile Mehl"
+          type="number"
+          step="1"
+          min="0"
+          v-model.number="store.starter.flour"
+          density="compact"
+          variant="outlined"
+        />
+        <v-text-field
+          label="Reserve für nächste Fütterung (g)"
+          type="number"
+          min="0"
+          v-model.number="store.starter.reserve"
+          density="compact"
+          variant="outlined"
+        />
+      </template>
     </v-card-text>
   </v-card>
 
+  <VorteigList />
+
+  <SoakerList />
+
   <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Flavor & Lift</v-card-title>
+    <v-card-title class="text-primary">Geschmack & Trieb</v-card-title>
     <v-card-text>
       <v-text-field
-        label="Salt (%)"
+        label="Salz (%)"
         type="number"
         step="0.1"
         min="0"
@@ -78,7 +159,8 @@
         variant="outlined"
       />
       <v-text-field
-        label="Yeast (%)"
+        v-if="store.fermentation.mode === 'manual' || store.fermentation.leaveningContribution === 1"
+        label="Hefe (%)"
         type="number"
         step="0.1"
         min="0"
@@ -86,8 +168,14 @@
         density="compact"
         variant="outlined"
       />
+      <div
+        v-else
+        class="text-body-2 text-medium-emphasis mb-4"
+      >
+        Hefe: {{ fermentationLeavening.yeastPercent.toFixed(3) }}% (berechnet)
+      </div>
       <v-text-field
-        label="Malt (%)"
+        label="Malz (%)"
         type="number"
         step="0.1"
         min="0"
@@ -98,90 +186,41 @@
     </v-card-text>
   </v-card>
 
-  <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Soakers</v-card-title>
-    <v-card-subtitle class="text-primary">Cooked, soaked or hydrated ingredients</v-card-subtitle>
-    <v-card-text>
-      <v-card
-        v-for="(s, index) in store.soakers"
-        :key="s.id"
-        class="mb-3"
-        color="background"
-        variant="flat"
-      >
-        <v-card-text>
-          <v-select
-            :items="soakerKinds"
-            v-model="s.kind"
-            label="Type"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="mb-3"
-          />
-          <v-row density="comfortable">
-            <v-col cols="6">
-              <v-text-field
-                label="Dry ingredient (g)"
-                type="number"
-                v-model.number="s.flour"
-                density="compact"
-                variant="outlined"
-              />
-            </v-col>
-            <v-col cols="6">
-              <v-text-field
-                label="Water (g)"
-                type="number"
-                v-model.number="s.water"
-                density="compact"
-                variant="outlined"
-              />
-            </v-col>
-          </v-row>
-          <div class="d-flex justify-end mt-n2">
-            <v-btn size="small" variant="text" color="error" @click="store.removeSoaker(s.id)">
-              Remove
-            </v-btn>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-card-text>
-    <v-card-actions>
-      <v-btn color="secondary" variant="tonal" @click="addSoaker()">+ Soaker</v-btn>
-    </v-card-actions>
-  </v-card>
-
-  <v-card class="mb-4" color="surface" variant="elevated">
-    <v-card-title class="text-primary">Starter Feeding</v-card-title>
+  <v-card
+    v-if="!(store.fermentation.mode === 'time' && store.fermentation.leaveningContribution === 0)"
+    class="mb-4"
+    color="surface"
+    variant="elevated"
+  >
+    <v-card-title class="text-primary">Sauerteig vorbereiten</v-card-title>
     <v-card-subtitle class="text-primary"
-      >Prepare {{ result.starterFeeding.seed.toFixed(0) }} g starter the day before</v-card-subtitle
+      >{{ result.starterFeeding.total.toFixed(0) }} g Sauerteig am Vortag ansetzen</v-card-subtitle
     >
     <v-card-text>
       <v-table density="compact">
         <tbody>
           <tr>
-            <td>Seed (old starter)</td>
+            <td>Anstellgut</td>
             <td class="text-right">{{ result.starterFeeding.seed.toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td>Flour</td>
+            <td>Mehl</td>
             <td class="text-right">{{ result.starterFeeding.flour.toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td>Water</td>
+            <td>Wasser</td>
             <td class="text-right">{{ result.starterFeeding.water.toFixed(0) }} g</td>
           </tr>
           <tr class="font-weight-bold">
-            <td>Total</td>
+            <td>Gesamt</td>
             <td class="text-right">{{ result.starterFeeding.total.toFixed(0) }} g</td>
           </tr>
           <tr class="text-medium-emphasis">
-            <td>Use for recipe</td>
+            <td>Für das Rezept</td>
             <td class="text-right">{{ result.starterFeeding.forRecipe.toFixed(0) }} g</td>
           </tr>
           <tr class="text-medium-emphasis">
-            <td>Keep as reserve</td>
+            <td>Reserve einbehalten</td>
             <td class="text-right">{{ store.starter.reserve }} g</td>
           </tr>
         </tbody>
@@ -189,43 +228,109 @@
     </v-card-text>
   </v-card>
 
-  <v-card color="surface" variant="elevated">
-    <v-card-title class="text-primary text-high-emphasis">Main Dough</v-card-title>
+  <v-card v-if="result.vorteigResults.length" class="mb-4" color="surface" variant="elevated">
+    <v-card-title class="text-primary">Vorteige vorbereiten</v-card-title>
+    <v-card-subtitle class="text-primary">Am Vortag ansetzen</v-card-subtitle>
     <v-card-text>
+      <div v-for="v in result.vorteigResults" :key="v.id">
+        <div class="text-medium-emphasis text-caption mb-1">
+          {{ vorteigDefinitions.get(v.type)?.label }}
+        </div>
+        <v-table density="compact" class="mb-3">
+          <tbody>
+            <tr>
+              <td>Mehl</td>
+              <td class="text-right">{{ v.flour.toFixed(0) }} g</td>
+            </tr>
+            <tr>
+              <td>Wasser</td>
+              <td class="text-right">{{ v.water.toFixed(0) }} g</td>
+            </tr>
+            <tr>
+              <td>Frischhefe</td>
+              <td class="text-right">{{ v.yeast.toFixed(2) }} g</td>
+            </tr>
+            <tr class="font-weight-bold">
+              <td>Gesamt</td>
+              <td class="text-right">{{ v.total.toFixed(0) }} g</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
+    </v-card-text>
+  </v-card>
+
+  <v-card color="surface" variant="elevated">
+    <v-card-title class="text-primary text-high-emphasis">Hauptteig</v-card-title>
+    <v-card-text>
+      <v-alert
+        v-if="result.yeastInfo.vorteigOverSuppliesYeast"
+        type="warning"
+        density="compact"
+        class="mb-3"
+      >
+        Vorteige liefern mehr Hefe als für die Zielgare benötigt.
+        Tatsächliche Gare ca. {{ result.yeastInfo.estimatedYeastHours?.toFixed(1) }}h
+        statt {{ result.yeastInfo.targetHours }}h.
+      </v-alert>
+      <v-alert
+        v-else-if="store.fermentation.mode === 'manual' && result.yeastInfo.combinedYeastPercent > 0 && result.vorteigResults.length > 0"
+        type="info"
+        density="compact"
+        class="mb-3"
+      >
+        Hefe gesamt (Hauptteig + Vorteige): {{ result.yeastInfo.combinedYeastPercent.toFixed(3) }}% →
+        geschätzte Gare ca. {{ result.yeastInfo.estimatedYeastHours?.toFixed(1) }}h
+        bei {{ store.fermentation.roomTemp }}°C.
+      </v-alert>
+      <v-alert
+        v-if="result.flourMain < 0 || result.waterMain < 0"
+        type="warning"
+        density="compact"
+        class="mb-3"
+      >
+        {{ result.flourMain < 0 ? 'Mehlanteil der Vorteige übersteigt das Gesamtmehl.' : '' }}
+        {{ result.waterMain < 0 ? 'Wasseranteil der Vorteige übersteigt die Zielhydration.' : '' }}
+      </v-alert>
       <v-table density="compact">
         <tbody>
           <tr>
-            <td class="text-high-emphasis">Flour</td>
-            <td class="text-right">{{ result.flourMain.toFixed(0) }} g</td>
-          </tr>
-          <tr>
-            <td class="text-high-emphasis">Water</td>
+            <td class="text-high-emphasis">Wasser</td>
             <td class="text-right">{{ result.waterMain.toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td class="text-high-emphasis">Starter</td>
+            <td class="text-high-emphasis">Sauerteig</td>
             <td class="text-right">{{ result.starterFeeding.forRecipe.toFixed(0) }} g</td>
+          </tr>
+          <tr v-for="v in result.vorteigResults" :key="v.id">
+            <td class="text-high-emphasis">{{ vorteigDefinitions.get(v.type)?.label }}</td>
+            <td class="text-right">{{ v.total.toFixed(0) }} g</td>
+          </tr>
+          <tr>
+            <td class="text-high-emphasis">Mehl</td>
+            <td class="text-right">{{ result.flourMain.toFixed(0) }} g</td>
           </tr>
           <tr v-for="(s, index) in store.soakers" :key="s.id">
             <td class="text-high-emphasis">
-              {{ s.kind }} Soaker{{ store.soakers.length > 1 ? ` ${index + 1}` : '' }}
+              {{ soakerDefinitions.get(s.kind)?.label }}{{ store.soakers.length > 1 ? ` ${index +
+              1}` : '' }}
             </td>
-            <td class="text-right">{{ (s.flour + s.water).toFixed(0) }} g</td>
+            <td class="text-right">{{ (s.dry + s.water).toFixed(0) }} g</td>
           </tr>
           <tr>
-            <td class="text-high-emphasis">Salt</td>
+            <td class="text-high-emphasis">Salz</td>
             <td class="text-right">{{ result.salt.toFixed(1) }} g</td>
           </tr>
-          <tr>
-            <td class="text-high-emphasis">Yeast</td>
+          <tr v-if="result.yeast > 0.005">
+            <td class="text-high-emphasis">Hefe</td>
             <td class="text-right">{{ result.yeast.toFixed(1) }} g</td>
           </tr>
           <tr>
-            <td class="text-high-emphasis">Malt</td>
+            <td class="text-high-emphasis">Malz</td>
             <td class="text-right">{{ result.malt.toFixed(1) }} g</td>
           </tr>
           <tr class="font-weight-bold">
-            <td class="text-high-emphasis">Effective Hydration</td>
+            <td class="text-high-emphasis">Effektive Hydration</td>
             <td class="text-right">{{ (result.effectiveHydration * 100).toFixed(1) }}%</td>
           </tr>
         </tbody>

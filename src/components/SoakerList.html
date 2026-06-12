@@ -1,0 +1,57 @@
+<v-card class="mb-4" color="surface" variant="elevated">
+  <v-card-title class="text-primary">Brüh-, Koch- und Quellstücke</v-card-title>
+  <v-card-subtitle class="text-primary"
+    >Gebrühte, gekochte oder gequollene Zutaten</v-card-subtitle
+  >
+  <v-card-text>
+    <v-card
+      v-for="s in store.soakers"
+      :key="s.id"
+      class="mb-3"
+      color="background"
+      variant="flat"
+    >
+      <v-card-text>
+        <v-select
+          :items="soakerKindItems"
+          :model-value="s.kind"
+          @update:model-value="store.updateSoakerKind(s.id, $event)"
+          label="Typ"
+          density="compact"
+          variant="outlined"
+          hide-details
+          class="mb-3"
+        />
+        <v-row density="comfortable">
+          <v-col cols="6">
+            <v-text-field
+              label="Trockengewicht (g)"
+              type="number"
+              :model-value="s.dry"
+              @update:model-value="store.updateSoakerDry(s.id, Number($event))"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              label="Wasser (g)"
+              type="number"
+              v-model.number="s.water"
+              density="compact"
+              variant="outlined"
+            />
+          </v-col>
+        </v-row>
+        <div class="d-flex justify-end mt-n2">
+          <v-btn size="small" variant="text" color="error" @click="store.removeSoaker(s.id)">
+            Entfernen
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-card-text>
+  <v-card-actions>
+    <v-btn color="primary" variant="tonal" @click="store.addSoaker()">+ Einlage</v-btn>
+  </v-card-actions>
+</v-card>

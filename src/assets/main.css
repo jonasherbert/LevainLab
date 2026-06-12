@@ -1,11 +1,3 @@
-@import 'tailwindcss';
-
-@layer base {
-  .v-application {
-    background: url('./LevainLab.png') center / cover no-repeat fixed !important;
-  }
-
-  .v-main {
-    background: transparent !important;
-  }
+.app-bar-subtitle {
+  opacity: 0.8;
 }

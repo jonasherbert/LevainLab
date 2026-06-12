@@ -1,11 +1,16 @@
 <v-app>
-  <v-app-bar :elevation="4" color="primary" scroll-behavior="hide" class="opacity-90">
+  <v-app-bar :elevation="4" color="appbar" scroll-behavior="hide" class="opacity-90">
     <v-app-bar-title>
-      <h1 class="text-on-primary font-weight-bold text-center">LevainLab</h1>
-      <p class="text-on-primary text-caption font-weight-regular text-center" style="opacity: 0.8">
-        Hydration, starters and baker's math.
-      </p>
+      <div class="font-weight-bold text-center">LevainLab</div>
     </v-app-bar-title>
+    <template #append>
+      <v-btn
+        :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+        color="on-appbar"
+        variant="text"
+        @click="toggleTheme"
+      />
+    </template>
   </v-app-bar>
 
   <v-main>
