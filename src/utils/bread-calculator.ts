@@ -136,8 +136,6 @@ export const calculateDough = (state: DoughState) => {
   const flourMain = state.totalFlour - flourUsed
   const waterMain = targetWater - waterUsed
 
-  const actualWaterInDough = starterFeeding.waterInDough + vorteig.waterUsed + soakers.actualWater + waterMain
-
   return {
     starterFeeding,
     vorteigResults: vorteig.results,
@@ -146,7 +144,6 @@ export const calculateDough = (state: DoughState) => {
     salt: state.totalFlour * (state.saltPercent / 100),
     yeast: state.totalFlour * (yeastPercent / 100),
     malt: state.totalFlour * (state.maltPercent / 100),
-    effectiveHydration: actualWaterInDough / state.totalFlour,
     yeastInfo: calcYeastInfo(yeastPercent, totalVorteigYeastPercent, fermented, state.maltPercent, state.fermentation),
   }
 }

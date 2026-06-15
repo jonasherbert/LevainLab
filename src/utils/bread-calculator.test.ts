@@ -123,11 +123,6 @@ describe('calculateDough — main dough water and flour', () => {
     expect(r.flourMain).toBeCloseTo(1000 - flourInStarter, 4)
   })
 
-  it('effective hydration equals target when no soakers', () => {
-    const r = calculateDough(baseState())
-    expect(r.effectiveHydration).toBeCloseTo(0.80, 4)
-  })
-
   it('waterMain accounts for water already in starter', () => {
     const r = calculateDough(baseState())
     // waterInStarter = 200 * (3/5) = 120
@@ -209,24 +204,21 @@ describe('calculateDough — soakers', () => {
     expect(r.flourMain).toBeCloseTo(750, 0)
   })
 
-  it('seed soaker water is fully absorbed (freeWaterFraction = 0)', () => {
+  it('seed soaker water does NOT reduce waterMain — seeds are pre-saturated, do not affect free water', () => {
     const state = baseState()
     state.soakers = [{ id: 's1', kind: 'sunflower', dry: 50, water: 25 }]
     const rWithout = calculateDough(baseState())
     const rWith = calculateDough(state)
-    // sunflower freeWaterFraction = 0 → doesn't reduce main water
-    // but actual water is higher → effectiveHydration changes
+    // sunflower freeWaterFraction = 0 → soaker water is additional, waterMain unchanged
     expect(rWith.waterMain).toBeCloseTo(rWithout.waterMain, 0)
-    expect(rWith.effectiveHydration).toBeGreaterThan(rWithout.effectiveHydration)
   })
 
-  it('flour soaker free water reduces main dough water', () => {
+  it('flour soaker free water reduces waterMain to keep free-water hydration = target', () => {
     const state = baseState()
-    // flour soaker freeWaterFraction = 1.0
+    // flour soaker freeWaterFraction = 1.0 — gelatinised starch releases water freely
     state.soakers = [{ id: 's1', kind: 'flour', dry: 100, water: 500 }]
     const r = calculateDough(state)
-    // waterInStarter = 120, soaker free water = 500 * 1.0 = 500
-    // waterMain = 800 - 120 - 500 = 180
+    // waterInStarter = 120, soaker free water = 500 → waterMain = 800 - 120 - 500 = 180
     expect(r.waterMain).toBeCloseTo(180, 0)
   })
 })
