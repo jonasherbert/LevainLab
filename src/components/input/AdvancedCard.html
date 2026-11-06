@@ -1,0 +1,94 @@
+<v-expansion-panels flat class="mb-4 border rounded-lg" data-testid="card-advanced">
+  <v-expansion-panel bg-color="surface">
+    <v-expansion-panel-title data-testid="advanced-toggle">
+      <v-icon icon="mdi-tune-variant" color="primary" class="me-4" />
+      <div>
+        <div class="text-title-large text-primary">Feineinstellungen</div>
+        <div class="text-body-medium text-medium-emphasis">
+          Temperaturen, Malzart, Knetwärme – die Standardwerte passen meist
+        </div>
+      </div>
+    </v-expansion-panel-title>
+    <v-expansion-panel-text>
+      <div class="text-title-small mb-2">Gare</div>
+      <v-row density="comfortable">
+        <v-col cols="6">
+          <NumberField
+            v-model="store.starter.temp"
+            v-bind="fields.starterTemp"
+            label="Sauerteig-Temperatur"
+            suffix="°C"
+            hint="für die Reifezeit"
+          />
+        </v-col>
+        <v-col cols="6">
+          <NumberField
+            v-model="store.fermentation.fridgeTemp"
+            v-bind="fields.fridgeTemp"
+            label="Kühlschrank"
+            suffix="°C"
+          />
+        </v-col>
+        <v-col cols="6">
+          <v-select
+            v-model="store.maltType"
+            :items="maltItems"
+            label="Malzart"
+            hint="nur aktives Malz beschleunigt"
+            persistent-hint
+            density="compact"
+            variant="outlined"
+            class="mb-3"
+          />
+        </v-col>
+      </v-row>
+
+      <div class="text-title-small mt-2 mb-2">Teigtemperatur</div>
+      <v-row density="comfortable">
+        <v-col cols="6">
+          <NumberField
+            v-model="store.mixing.flourTemp"
+            v-bind="fields.flourTemp"
+            label="Mehltemperatur"
+            suffix="°C"
+          />
+        </v-col>
+        <v-col cols="6">
+          <NumberField
+            v-model="store.mixing.frictionRise"
+            v-bind="fields.frictionRise"
+            label="Knetwärme"
+            suffix="°C"
+            hint="Hand 1–2, Maschine 3–6"
+          />
+        </v-col>
+      </v-row>
+      <div class="text-body-medium">{{ waterText }} Ziel ist die Gärtemperatur.</div>
+
+      <v-divider class="my-4" />
+      <v-btn
+        v-if="!confirmReset"
+        variant="text"
+        color="error"
+        prepend-icon="mdi-restore"
+        data-testid="reset"
+        @click="confirmReset = true"
+      >
+        Alle Eingaben zurücksetzen
+      </v-btn>
+      <div v-else class="d-flex align-center flex-wrap ga-2">
+        <span class="text-body-medium">Alle Eingaben auf die Standardwerte setzen?</span>
+        <v-btn
+          color="error"
+          variant="flat"
+          size="small"
+          data-testid="reset-confirm"
+          @click="resetAll"
+        >
+          Zurücksetzen
+        </v-btn>
+        <v-btn variant="text" size="small" @click="confirmReset = false">Abbrechen</v-btn>
+      </div>
+    </v-expansion-panel-text>
+  </v-expansion-panel>
+</v-expansion-panels>

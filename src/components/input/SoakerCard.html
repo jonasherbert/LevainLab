@@ -1,0 +1,70 @@
+<v-card class="mb-4" color="surface" data-testid="card-soakers">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-seed-outline" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Einlagen</v-card-title>
+    <v-card-subtitle class="text-primary">Brüh-, Koch- und Quellstücke</v-card-subtitle>
+    <template #append>
+      <v-btn
+        color="primary"
+        variant="tonal"
+        size="small"
+        prepend-icon="mdi-plus"
+        data-testid="add-soaker"
+        @click="store.addSoaker()"
+      >
+        Einlage
+      </v-btn>
+    </template>
+  </v-card-item>
+  <v-card-text v-if="result.soakers.length">
+    <v-card v-for="s in result.soakers" :key="s.id" class="mb-3" color="background" variant="flat">
+      <v-card-text>
+        <div class="d-flex align-center ga-2 mb-4">
+          <v-select
+            :items="kindItems"
+            :model-value="s.kind"
+            label="Art"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="flex-grow-1"
+            @update:model-value="store.setSoakerKind(s.id, $event)"
+          />
+          <v-btn
+            icon="mdi-delete-outline"
+            variant="text"
+            color="error"
+            :aria-label="`${labels.get(s.id)} entfernen`"
+            @click="store.removeSoaker(s.id)"
+          />
+        </div>
+        <v-row density="comfortable">
+          <v-col cols="6">
+            <NumberField
+              :model-value="s.dry"
+              v-bind="fields.soakerGrams"
+              label="Trocken"
+              suffix="g"
+              @update:model-value="store.setSoakerDryGrams(s.id, $event)"
+            />
+          </v-col>
+          <v-col cols="6">
+            <NumberField
+              :model-value="s.water"
+              v-bind="fields.soakerGrams"
+              label="Wasser"
+              suffix="g"
+              @update:model-value="store.setSoakerWaterGrams(s.id, $event)"
+            />
+          </v-col>
+        </v-row>
+        <div class="text-body-medium text-medium-emphasis">
+          Verhältnis 1 : {{ ratio(s.waterRatio) }} · {{ categoryHints[s.category] }}
+        </div>
+      </v-card-text>
+    </v-card>
+    <div class="text-body-small text-medium-emphasis">Die Mengen skalieren mit dem Mehl.</div>
+  </v-card-text>
+</v-card>

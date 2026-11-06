@@ -1,0 +1,91 @@
+<v-card class="mb-4" color="surface" data-testid="card-vorteige">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-bowl-mix-outline" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Vorteige</v-card-title>
+    <v-card-subtitle class="text-primary">Poolish und Biga mit Hefe</v-card-subtitle>
+    <template #append>
+      <v-btn
+        color="primary"
+        variant="tonal"
+        size="small"
+        prepend-icon="mdi-plus"
+        data-testid="add-vorteig"
+        @click="store.addVorteig()"
+      >
+        Vorteig
+      </v-btn>
+    </template>
+  </v-card-item>
+  <v-card-text v-if="store.vorteige.length">
+    <v-card v-for="v in store.vorteige" :key="v.id" class="mb-3" color="background" variant="flat">
+      <v-card-text>
+        <div class="d-flex align-center ga-2 mb-4">
+          <v-select
+            :items="typeItems"
+            :model-value="v.type"
+            label="Typ"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="flex-grow-1"
+            @update:model-value="store.setVorteigType(v.id, $event)"
+          />
+          <v-btn
+            icon="mdi-delete-outline"
+            variant="text"
+            color="error"
+            :aria-label="`${labels.get(v.id)} entfernen`"
+            @click="store.removeVorteig(v.id)"
+          />
+        </div>
+        <v-row density="comfortable">
+          <v-col cols="6">
+            <NumberField
+              v-model="v.flourPercent"
+              v-bind="fields.vorteigFlourPercent"
+              label="Mehl"
+              suffix="%"
+              hint="vom Gesamtmehl"
+            />
+          </v-col>
+          <v-col cols="6">
+            <NumberField
+              v-model="v.hydration"
+              v-bind="fields.vorteigHydration"
+              label="Hydration"
+              suffix="%"
+            />
+          </v-col>
+          <v-col cols="6">
+            <NumberField
+              v-if="isTimeMode"
+              v-model="v.fermentationHours"
+              v-bind="fields.vorteigHours"
+              label="Gärzeit"
+              suffix="h"
+            />
+            <NumberField
+              v-else
+              v-model="v.yeastPercent"
+              v-bind="fields.vorteigYeastPercent"
+              label="Frischhefe"
+              suffix="%"
+              hint="vom Vorteigmehl"
+            />
+          </v-col>
+          <v-col cols="6">
+            <NumberField
+              v-model="v.fermentationTemp"
+              v-bind="fields.vorteigTemp"
+              label="Temperatur"
+              suffix="°C"
+            />
+          </v-col>
+        </v-row>
+        <div class="text-body-medium text-medium-emphasis">{{ captions.get(v.id) }}</div>
+      </v-card-text>
+    </v-card>
+  </v-card-text>
+</v-card>

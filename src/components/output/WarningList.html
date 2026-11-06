@@ -1,0 +1,12 @@
+<div data-testid="warnings">
+  <v-alert
+    v-for="w in warnings"
+    :key="w.key"
+    :type="w.severity"
+    density="compact"
+    variant="tonal"
+    class="mb-4"
+  >
+    {{ w.text }}
+  </v-alert>
+</div>

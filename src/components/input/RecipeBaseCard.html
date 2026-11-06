@@ -1,0 +1,72 @@
+<v-card class="mb-4" color="surface" data-testid="card-base">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-scale-balance" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Basis</v-card-title>
+  </v-card-item>
+  <v-card-text>
+    <v-btn-toggle
+      :model-value="store.sizingMode"
+      mandatory
+      divided
+      density="compact"
+      variant="outlined"
+      color="primary"
+      class="w-100 mb-4"
+      @update:model-value="store.setSizingMode($event)"
+    >
+      <v-btn value="flour" class="flex-grow-1" data-testid="sizing-flour">Nach Mehl</v-btn>
+      <v-btn value="pieces" class="flex-grow-1" data-testid="sizing-pieces">Nach Teiglingen</v-btn>
+    </v-btn-toggle>
+
+    <NumberField
+      v-if="store.sizingMode === 'flour'"
+      v-model="store.totalFlour"
+      v-bind="fields.totalFlour"
+      label="Gesamtmehl"
+      suffix="g"
+    />
+    <v-row v-else density="comfortable">
+      <v-col cols="6">
+        <NumberField v-model="store.pieceCount" v-bind="fields.pieceCount" label="Anzahl" />
+      </v-col>
+      <v-col cols="6">
+        <NumberField
+          v-model="store.pieceWeight"
+          v-bind="fields.pieceWeight"
+          label="Teig je Stück"
+          suffix="g"
+          :hint="`ergibt ${fmt.grams(result.totalFlour)} Mehl`"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row density="comfortable">
+      <v-col cols="4">
+        <NumberField
+          v-model="store.targetHydration"
+          v-bind="fields.targetHydration"
+          label="Hydration"
+          suffix="%"
+        />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          v-model="store.saltPercent"
+          v-bind="fields.saltPercent"
+          label="Salz"
+          suffix="%"
+        />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          v-model="store.maltPercent"
+          v-bind="fields.maltPercent"
+          label="Malz"
+          suffix="%"
+        />
+      </v-col>
+    </v-row>
+  </v-card-text>
+</v-card>

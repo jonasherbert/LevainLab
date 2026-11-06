@@ -1,19 +1,39 @@
 <v-app>
-  <v-app-bar :elevation="4" color="appbar" scroll-behavior="hide" class="opacity-90">
+  <v-app-bar color="appbar" density="compact" :elevation="2">
     <v-app-bar-title>
       <div class="font-weight-bold text-center">LevainLab</div>
     </v-app-bar-title>
     <template #append>
       <v-btn
         :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+        :aria-label="isDark ? 'Helles Design' : 'Dunkles Design'"
         color="on-appbar"
         variant="text"
         @click="toggleTheme"
       />
     </template>
+    <template #extension>
+      <v-tabs v-model="tab" grow slider-color="accent" class="w-100">
+        <v-tab value="inputs" prepend-icon="mdi-pencil-outline" data-testid="tab-inputs">
+          Eingaben
+        </v-tab>
+        <v-tab value="recipe" prepend-icon="mdi-bread-slice-outline" data-testid="tab-recipe">
+          Rezept
+          <v-badge v-if="warningCount" :content="warningCount" color="warning" inline />
+        </v-tab>
+      </v-tabs>
+    </template>
   </v-app-bar>
 
   <v-main>
-    <DoughCalculator />
+    <v-container v-if="renderError" class="calculator">
+      <v-alert type="error" variant="tonal" title="Etwas ist schiefgelaufen">
+        Die Eingaben lassen sich nicht anzeigen. Du kannst sie auf die Standardwerte zurücksetzen.
+        <div class="mt-3">
+          <v-btn color="error" variant="flat" @click="resetInputs">Eingaben zurücksetzen</v-btn>
+        </div>
+      </v-alert>
+    </v-container>
+    <DoughCalculator v-else :key="calculatorKey" v-model:tab="tab" />
   </v-main>
 </v-app>

@@ -1,6 +1,7 @@
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
+import { de } from 'vuetify/locale'
 
 const lightTheme = {
   dark: false,
@@ -34,9 +35,16 @@ const darkTheme = {
   },
 }
 
-export const vuetify = createVuetify({
-  theme: {
-    defaultTheme: 'lightTheme',
-    themes: { lightTheme, darkTheme },
-  },
-})
+/** Eigene Instanz je App; die Tests brauchen eine frische. */
+export const createAppVuetify = () =>
+  createVuetify({
+    theme: {
+      defaultTheme: 'lightTheme',
+      themes: { lightTheme, darkTheme },
+    },
+    locale: { locale: 'de', messages: { de } },
+    defaults: {
+      // Flache Karten mit feinem Rand statt Schatten
+      VCard: { variant: 'flat', rounded: 'lg', border: true },
+    },
+  })

@@ -1,0 +1,17 @@
+<v-text-field
+  :model-value="draft"
+  :label="label"
+  :suffix="suffix"
+  :hint="hint"
+  :persistent-hint="!!hint"
+  :readonly="readonly"
+  :error-messages="errorMessages"
+  :inputmode="inputmode"
+  :class="{ 'mb-3': !!hint }"
+  type="text"
+  autocomplete="off"
+  density="compact"
+  variant="outlined"
+  @update:model-value="onInput"
+  @update:focused="onFocusChange"
+/>

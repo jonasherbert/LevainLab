@@ -1,0 +1,9 @@
+<v-row density="comfortable" class="mb-3" data-testid="recipe-summary">
+  <v-col v-for="tile in tiles" :key="tile.key" cols="4">
+    <v-sheet color="surface" rounded="lg" border class="pa-3 text-center h-100">
+      <div class="text-label-medium text-medium-emphasis">{{ tile.label }}</div>
+      <div class="text-title-large text-primary text-no-wrap">{{ tile.value }}</div>
+      <div class="text-body-small text-medium-emphasis">{{ tile.detail }}</div>
+    </v-sheet>
+  </v-col>
+</v-row>

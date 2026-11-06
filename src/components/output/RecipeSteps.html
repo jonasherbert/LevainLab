@@ -1,0 +1,67 @@
+<v-card class="mb-4" color="surface" data-testid="recipe-steps">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-clock-outline" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Ablauf</v-card-title>
+  </v-card-item>
+  <v-card-text>
+    <v-row density="comfortable">
+      <v-col :cols="showProof ? 6 : 12">
+        <v-text-field
+          :model-value="bakeTimeDraft"
+          type="time"
+          label="Backen um"
+          density="compact"
+          variant="outlined"
+          data-testid="bake-time"
+          @update:model-value="onBakeTimeInput"
+          @update:focused="onBakeTimeFocus"
+        />
+      </v-col>
+      <v-col v-if="showProof" cols="6">
+        <NumberField
+          v-model="store.fermentation.proofHours"
+          v-bind="fields.proofHours"
+          label="Stückgare"
+          suffix="h"
+          hint="Formen so lange vor dem Backen"
+        />
+      </v-col>
+    </v-row>
+
+    <v-timeline
+      side="end"
+      align="start"
+      density="compact"
+      truncate-line="both"
+      line-color="secondary"
+      class="recipe-timeline"
+    >
+      <v-timeline-item
+        v-for="step in steps"
+        :key="step.key"
+        :icon="step.icon"
+        dot-color="primary"
+        size="small"
+        fill-dot
+      >
+        <div class="text-label-medium text-medium-emphasis">{{ step.when }}</div>
+        <div class="text-title-medium" :class="{ 'font-weight-bold': step.isBake }">
+          {{ step.title }}
+        </div>
+        <v-table v-if="step.items.length" density="compact" class="bg-transparent mt-1">
+          <tbody>
+            <tr v-for="(item, index) in step.items" :key="index">
+              <td class="ps-0">{{ item.label }}</td>
+              <td class="pe-0 text-right text-no-wrap">{{ item.amount }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+        <div v-if="step.note" class="text-body-small text-medium-emphasis mt-1 mb-2">
+          {{ step.note }}
+        </div>
+      </v-timeline-item>
+    </v-timeline>
+  </v-card-text>
+</v-card>

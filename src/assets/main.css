@@ -1,3 +1,16 @@
 .app-bar-subtitle {
   opacity: 0.8;
 }
+
+/* Eine Spalte auf allen Geräten; Eingaben und Rezept liegen in zwei Tabs. */
+.v-container.calculator {
+  max-width: 640px;
+}
+
+/* Inhalt der Zeitleiste über die volle Breite, damit die Mengen rechtsbündig stehen. */
+.recipe-timeline .v-timeline-item__body {
+  flex: 1 1 auto;
+  width: 100%;
+  /* Grid-Elemente schrumpfen sonst nicht unter ihre Inhaltsbreite und ragen über den Rand. */
+  min-width: 0;
+}

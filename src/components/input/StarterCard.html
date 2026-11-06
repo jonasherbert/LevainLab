@@ -1,0 +1,61 @@
+<v-card class="mb-4" color="surface" data-testid="card-starter">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-flask-outline" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Sauerteig</v-card-title>
+  </v-card-item>
+  <v-card-text>
+    <v-alert
+      v-if="!result.leavening.usesSourdough"
+      type="info"
+      variant="tonal"
+      density="compact"
+      class="mb-4"
+    >
+      Das Rezept enthält gerade keinen Sauerteig.
+    </v-alert>
+
+    <v-row density="comfortable">
+      <v-col cols="12">
+        <v-select
+          :items="presetItems"
+          :model-value="store.starter.preset"
+          label="Fütterung (Anstellgut : Mehl : Wasser)"
+          :hint="profileHint"
+          persistent-hint
+          density="compact"
+          variant="outlined"
+          class="mb-3"
+          @update:model-value="store.applyStarterPreset($event)"
+        />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          :model-value="store.starter.flour"
+          v-bind="fields.starterFlour"
+          label="Mehl"
+          suffix="Teile"
+          @update:model-value="store.setStarterParts('flour', $event)"
+        />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          :model-value="store.starter.water"
+          v-bind="fields.starterWater"
+          label="Wasser"
+          suffix="Teile"
+          @update:model-value="store.setStarterParts('water', $event)"
+        />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          v-model="store.starter.reserve"
+          v-bind="fields.starterReserve"
+          label="Reserve"
+          suffix="g"
+        />
+      </v-col>
+    </v-row>
+  </v-card-text>
+</v-card>

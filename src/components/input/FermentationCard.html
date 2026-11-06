@@ -1,0 +1,97 @@
+<v-card class="mb-4" color="surface" data-testid="card-fermentation">
+  <v-card-item>
+    <template #prepend>
+      <v-icon icon="mdi-timer-sand" color="primary" />
+    </template>
+    <v-card-title class="text-primary">Gare &amp; Triebmittel</v-card-title>
+  </v-card-item>
+  <v-card-text>
+    <v-btn-toggle
+      :model-value="store.fermentation.mode"
+      mandatory
+      divided
+      density="compact"
+      variant="outlined"
+      color="primary"
+      class="w-100 mb-4"
+      @update:model-value="store.setFermentationMode($event)"
+    >
+      <v-btn value="amount" class="flex-grow-1" data-testid="mode-amount">Menge vorgeben</v-btn>
+      <v-btn value="time" class="flex-grow-1" data-testid="mode-time">Zeit vorgeben</v-btn>
+    </v-btn-toggle>
+
+    <v-row v-if="isTimeMode" density="comfortable">
+      <v-col cols="12">
+        <NumberField
+          v-model="store.fermentation.roomHours"
+          v-bind="fields.roomHours"
+          :label="roomLabel"
+          suffix="h"
+          :hint="roomHint"
+        />
+      </v-col>
+    </v-row>
+    <v-row v-else density="comfortable">
+      <v-col cols="6">
+        <NumberField
+          v-model="store.starter.percent"
+          v-bind="fields.starterPercent"
+          label="Versäuerungsgrad"
+          suffix="%"
+        />
+      </v-col>
+      <v-col cols="6">
+        <NumberField
+          v-model="store.yeastPercent"
+          v-bind="fields.yeastPercent"
+          label="Frischhefe"
+          suffix="%"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row density="comfortable">
+      <v-col cols="6">
+        <NumberField
+          v-model="store.fermentation.roomTemp"
+          v-bind="fields.roomTemp"
+          label="Gärtemperatur"
+          suffix="°C"
+        />
+      </v-col>
+      <v-col cols="6">
+        <NumberField
+          v-model="store.fermentation.fridgeHours"
+          v-bind="fields.fridgeHours"
+          label="Kühlschrankgare"
+          suffix="h"
+        />
+      </v-col>
+    </v-row>
+
+    <template v-if="isTimeMode">
+      <v-switch
+        v-model="yeastAssist"
+        label="Hefe zugeben"
+        color="primary"
+        density="compact"
+        hide-details
+        data-testid="yeast-assist"
+      />
+      <div v-if="yeastAssist" data-testid="yeast-share">
+        <div class="text-body-medium">{{ shareText }}</div>
+        <v-slider
+          v-model="yeastShare"
+          :min="5"
+          :max="100"
+          :step="5"
+          color="primary"
+          hide-details
+          aria-label="Anteil der Hefe am Trieb"
+        />
+      </div>
+      <div class="text-body-medium font-weight-medium mt-2">{{ computedAmounts }}</div>
+    </template>
+    <div v-else class="text-body-medium font-weight-medium">{{ estimatedTime }}</div>
+  </v-card-text>
+</v-card>

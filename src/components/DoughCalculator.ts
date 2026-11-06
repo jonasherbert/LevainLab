@@ -1,39 +1,34 @@
-import { computed, defineComponent } from 'vue'
-import { useBreadStore } from '@/stores/breadStore'
-import { soakerDefinitions, vorteigDefinitions } from '@/types/bread'
-import { calcFermentationLeavening } from '@/utils/bread-calculator'
-import VorteigList from './VorteigList.vue'
-import SoakerList from './SoakerList.vue'
+import { defineComponent, type PropType } from 'vue'
+import type { CalculatorTab } from '@/types/ui'
+import AdvancedCard from './input/AdvancedCard.vue'
+import FermentationCard from './input/FermentationCard.vue'
+import RecipeBaseCard from './input/RecipeBaseCard.vue'
+import SoakerCard from './input/SoakerCard.vue'
+import StarterCard from './input/StarterCard.vue'
+import VorteigCard from './input/VorteigCard.vue'
+import RecipeSteps from './output/RecipeSteps.vue'
+import RecipeSummary from './output/RecipeSummary.vue'
+import WarningList from './output/WarningList.vue'
 
 export default defineComponent({
-  components: { VorteigList, SoakerList },
+  name: 'DoughCalculator',
+  components: {
+    RecipeBaseCard,
+    StarterCard,
+    FermentationCard,
+    VorteigCard,
+    SoakerCard,
+    AdvancedCard,
+    WarningList,
+    RecipeSummary,
+    RecipeSteps,
+  },
 
-  setup() {
-    const store = useBreadStore()
-    const result = computed(() => store.result)
+  props: {
+    tab: { type: String as PropType<CalculatorTab>, default: 'inputs' },
+  },
 
-    const leaveningItems = [
-      { title: 'Nur Sauerteig', value: 1.0 },
-      { title: 'Sauerteig + Hefe', value: 0.8 },
-      { title: 'Nur Hefe', value: 0.0 },
-    ]
-
-    const fermentationLeavening = computed(() => {
-      const raw = calcFermentationLeavening(store.fermentation, store.maltPercent)
-      const totalVorteigYeast = store.vorteige.reduce((sum: number, v) => sum + v.yeastPercent, 0)
-      return {
-        starterPercent: raw.starterPercent,
-        yeastPercent: Math.max(0, raw.yeastPercent - totalVorteigYeast),
-      }
-    })
-
-    return {
-      store,
-      result,
-      soakerDefinitions,
-      vorteigDefinitions,
-      leaveningItems,
-      fermentationLeavening,
-    }
+  emits: {
+    'update:tab': (tab: CalculatorTab) => tab === 'inputs' || tab === 'recipe',
   },
 })
