@@ -189,6 +189,20 @@ describe('DoughCalculator', () => {
     expect(errors).toEqual([])
   })
 
+  it('hides recipe rows that round to zero', async () => {
+    const { wrapper } = await setup((s) => {
+      s.addVorteig('poolish')
+      s.vorteige[0]!.yeastPercent = 0
+      s.addSoaker('sunflower')
+      s.soakers[0]!.waterRatio = 0
+    })
+    const steps = wrapper.find('[data-testid="recipe-steps"]').text()
+    // keine „0 g“ oder „0,00 g“, die nicht Teil einer größeren Zahl sind
+    expect(steps).not.toMatch(/(^|[^\d.,])0(,0+)? g/)
+    expect(steps).not.toContain('Öl/Fett')
+    expect(steps).toContain('Ohne Hefe bzw. Gärzeit gärt der Vorteig nicht.')
+  })
+
   it('migrates a stored v1 state that used to brick the app', async () => {
     localStorage.setItem(LEGACY_VERSION_KEY, '1')
     localStorage.setItem(

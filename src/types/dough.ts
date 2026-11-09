@@ -82,12 +82,16 @@ export interface DoughState {
   pieceCount: number
   /** Teiggewicht je Teigling (g). */
   pieceWeight: number
+  /** Verlust beim Verarbeiten (%), wird im Teiglings-Modus auf das Teiggewicht aufgeschlagen. */
+  lossPercent: number
   targetHydration: number
   saltPercent: number
   /** Frischhefe im Hauptteig, % vom Gesamtmehl (Eingabe im Mengenmodus). */
   yeastPercent: number
   maltPercent: number
   maltType: MaltType
+  /** Öl oder Fett, % vom Gesamtmehl; zählt zum Teiggewicht, nicht zur Hydration. */
+  fatPercent: number
   starter: StarterSettings
   fermentation: FermentationSettings
   mixing: MixingSettings

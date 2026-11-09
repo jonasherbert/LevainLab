@@ -83,6 +83,7 @@ export interface MainDoughResult {
   salt: number
   yeast: number
   malt: number
+  fat: number
 }
 
 export interface WaterTemperatureResult {
@@ -125,6 +126,8 @@ export interface SummaryResult {
   prefermentedFlourPercent: number
   pieceCount: number | null
   pieceWeight: number | null
+  /** Verlust beim Verarbeiten in % (nur im Teiglings-Modus). */
+  lossPercent: number | null
 }
 
 export type DoughWarning =

@@ -6,9 +6,10 @@ A dough calculator for sourdough bakers. Enter the flour (or the number and weig
 
 ## Features
 
-- **Sizing** — by total flour or by number × weight of the dough pieces
+- **Sizing** — by total flour or by number × weight of the dough pieces, with an allowance for processing losses (default 3 %)
 - **Starter** — feeding presets (stiff, liquid, Lievito Madre, rye) with TA, ripening time and reserve; the seed's flour and water are part of the dough balance
 - **Fermentation** — enter the amounts and get the estimated proofing time, or enter the time and get the amounts; optional yeast alongside the sourdough, fridge proof including cool-down, active or inactive malt
+- **Oil/fat** — optional, as % of flour; counts towards the dough weight, not the hydration
 - **Pre-ferments** — poolish and biga, yeast relative to the pre-ferment's own flour
 - **Soakers** — entered in grams, scaled with the flour; grain products count as flour (their water counts towards hydration), oil seeds keep their soaking water bound
 - **Dough temperature** — water temperature for the target dough temperature

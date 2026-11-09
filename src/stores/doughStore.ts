@@ -41,7 +41,9 @@ export const useDoughStore = defineStore('dough', {
       if (mode === 'flour') {
         this.totalFlour = fitField('totalFlour', result.totalFlour)
       } else {
-        this.pieceWeight = fitField('pieceWeight', result.doughWeight / this.pieceCount)
+        // Der Verlust steckt im Teiggewicht; je Teigling bleibt der Rest.
+        const pieces = this.pieceCount * (1 + this.lossPercent / 100)
+        this.pieceWeight = fitField('pieceWeight', result.doughWeight / pieces)
       }
       this.sizingMode = mode
     },

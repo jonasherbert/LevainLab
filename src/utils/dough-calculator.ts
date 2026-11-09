@@ -21,6 +21,7 @@ import {
   starterSeedFlourFraction,
   type LeaveningCalculation,
 } from './fermentation'
+import { hasAmount } from './format'
 import { sumBy } from './numbers'
 import { buildSchedule } from './schedule'
 import { FIELDS, sanitizeState } from './schema'
@@ -151,6 +152,7 @@ const buildRecipe = (
     salt: (totalFlour * state.saltPercent) / 100,
     yeast: (totalFlour * leavening.leavening.yeastPercent) / 100,
     malt: (totalFlour * state.maltPercent) / 100,
+    fat: (totalFlour * state.fatPercent) / 100,
   }
 
   const doughWeight =
@@ -159,6 +161,7 @@ const buildRecipe = (
     main.salt +
     main.yeast +
     main.malt +
+    main.fat +
     (starter?.forRecipe ?? 0) +
     sumBy(vorteige, (v) => v.total) +
     sumBy(soakers, (s) => s.total)
@@ -177,6 +180,10 @@ const buildRecipe = (
   }
 }
 
+/** Teiggewicht, das im Teiglings-Modus angesetzt wird: Teiglinge plus Verlust beim Verarbeiten. */
+export const targetDoughWeight = (state: DoughState): number =>
+  state.pieceCount * state.pieceWeight * (1 + state.lossPercent / 100)
+
 /**
  * Gesamtmehl. Im Teiglings-Modus skaliert jede Zutat linear mit dem Mehl, also ergibt sich das
  * Mehl aus Teiggewicht geteilt durch die Teigmasse des Rezepts bei 1 g Mehl – auch bei Überlauf.
@@ -184,7 +191,7 @@ const buildRecipe = (
 const resolveTotalFlour = (state: DoughState, leavening: LeaveningCalculation): number => {
   if (state.sizingMode === 'flour') return state.totalFlour
   const doughPerGramFlour = buildRecipe(state, leavening, 1).doughWeight
-  return doughPerGramFlour > 0 ? (state.pieceCount * state.pieceWeight) / doughPerGramFlour : 0
+  return doughPerGramFlour > 0 ? targetDoughWeight(state) / doughPerGramFlour : 0
 }
 
 export const calculateDough = (input: DoughState): DoughResult => {
@@ -206,7 +213,7 @@ export const calculateDough = (input: DoughState): DoughResult => {
 
   const components: HeatComponent[] = [
     {
-      dry: main.flour + main.salt + main.yeast + main.malt,
+      dry: main.flour + main.salt + main.yeast + main.malt + main.fat,
       water: 0,
       temp: state.mixing.flourTemp,
     },
@@ -252,7 +259,8 @@ export const calculateDough = (input: DoughState): DoughResult => {
     proofHours: state.fermentation.proofHours,
     starterHours: starter ? starterProfile.ripeningHours : null,
     vorteige: recipe.vorteige.map((v) => ({ id: v.id, hours: v.hours })),
-    hasSoakers: recipe.soakers.length > 0,
+    // Einlagen, die gerundet 0 g ergeben, brauchen keinen eigenen Schritt
+    hasSoakers: recipe.soakers.some((s) => hasAmount(s.dry)),
   })
 
   const countedFlour = main.flour + sumSources(recipe.flourUsed)
@@ -275,6 +283,7 @@ export const calculateDough = (input: DoughState): DoughResult => {
           : 0,
       pieceCount: pieces ? state.pieceCount : null,
       pieceWeight: pieces ? state.pieceWeight : null,
+      lossPercent: pieces ? state.lossPercent : null,
     },
     leavening: lv,
     starterProfile,

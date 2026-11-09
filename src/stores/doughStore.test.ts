@@ -34,11 +34,12 @@ describe('doughStore', () => {
       const store = useDoughStore()
       store.pieceCount = 2
       store.setSizingMode('pieces')
-      expect(store.pieceWeight).toBeCloseTo(886, 9)
+      // 1772 g Teig enthalten 3 % Verlust; je Teigling bleibt der Rest
+      expect(store.pieceWeight).toBeCloseTo(1772 / (2 * 1.03), 9)
       expect(store.result.totalFlour).toBeCloseTo(1000, 6)
       store.pieceWeight = 900
       store.setSizingMode('flour')
-      expect(store.totalFlour).toBeCloseTo(1015.8, 1)
+      expect(store.totalFlour).toBeCloseTo((1800 * 1.03) / 1.772, 6)
     })
   })
 
@@ -125,7 +126,7 @@ describe('doughStore', () => {
       expect(soakerResult(store, seeds).water).toBeCloseTo(70, 6)
       expect(store.soakers[1]!.dryPercent).toBe(flourPercent)
       expect(soakerResult(store, flour).dry).toBeLessThan(50)
-      expect(store.result.doughWeight).toBeCloseTo(1800, 6)
+      expect(store.result.doughWeight).toBeCloseTo(1800 * 1.03, 6)
     })
 
     it('ignores water for an empty soaker and unreachable amounts', () => {

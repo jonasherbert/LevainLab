@@ -28,7 +28,7 @@ describe('calculateDough – defaults', () => {
 
   it('computes the main dough and summary', () => {
     expect(r.totalFlour).toBe(1000)
-    expect(r.main).toEqual({ flour: 800, water: 630, salt: 22, yeast: 0, malt: 0 })
+    expect(r.main).toEqual({ flour: 800, water: 630, salt: 22, yeast: 0, malt: 0, fat: 0 })
     expect(r.doughWeight).toBeCloseTo(1772, 9)
     expect(r.summary.hydration).toBeCloseTo(75, 9)
     expect(r.summary.ta).toBeCloseTo(175, 9)
@@ -193,6 +193,12 @@ describe('soakers', () => {
     expect(withSoaker('bread', 16, 2).warnings.map((w) => w.code)).toContain('altbrot-high')
     expect(withSoaker('bread', 10, 2).warnings).toEqual([])
   })
+
+  it('schedules no soaker step for soakers without amount', () => {
+    const kinds = (r: ReturnType<typeof calculateDough>) => r.schedule?.steps.map((s) => s.kind)
+    expect(kinds(withSoaker('sunflower', 5, 0.5))).toContain('soakers')
+    expect(kinds(withSoaker('sunflower', 0, 0.5))).not.toContain('soakers')
+  })
 })
 
 describe('overflow', () => {
@@ -216,17 +222,36 @@ describe('overflow', () => {
 })
 
 describe('sizing by pieces', () => {
+  /** Teiglings-Modus ohne Verlust, damit die Werte exakt der Eingabe entsprechen. */
+  const pieces = (patch: (s: DoughState) => void = () => {}) =>
+    state((s) => {
+      s.sizingMode = 'pieces'
+      s.lossPercent = 0
+      patch(s)
+    })
+
   it('derives the flour from the dough weight', () => {
-    const r = calculateDough(state((s) => (s.sizingMode = 'pieces')))
+    const r = calculateDough(pieces())
     expect(r.totalFlour).toBeCloseTo(1015.801354, 5)
     expect(r.doughWeight).toBeCloseTo(1800, 9)
     expect(r.summary.pieceCount).toBe(2)
   })
 
+  it('adds the loss allowance to the dough weight', () => {
+    const fivePieces = (s: DoughState) => {
+      s.pieceCount = 5
+      s.pieceWeight = 380
+    }
+    expect(calculateDough(pieces(fivePieces)).doughWeight).toBeCloseTo(1900, 9)
+    const r = calculateDough(pieces((s) => (fivePieces(s), (s.lossPercent = 3))))
+    expect(r.doughWeight).toBeCloseTo(1957, 9)
+    expect(r.summary.lossPercent).toBe(3)
+    expect(calculateDough(createDefaultState()).summary.lossPercent).toBeNull()
+  })
+
   it('accounts for seeds and Vorteige', () => {
     const r = calculateDough(
-      state((s) => {
-        s.sizingMode = 'pieces'
+      pieces((s) => {
         s.pieceCount = 3
         s.pieceWeight = 750
         s.vorteige = [createVorteig('poolish', 'v1')]
@@ -240,21 +265,57 @@ describe('sizing by pieces', () => {
   })
 
   it('converts soaker grams exactly, also when seeds change the dough weight', () => {
-    const pieces = state((s) => (s.sizingMode = 'pieces'))
+    const base = pieces()
     const sunflower = { id: null, kind: 'sunflower' as const, waterRatio: 0.5 }
-    const percent = soakerDryPercentForGrams(pieces, sunflower, 100)
+    const percent = soakerDryPercentForGrams(base, sunflower, 100)
     expect(percent).toBeCloseTo(10.739394, 5)
     const r = calculateDough({
-      ...pieces,
+      ...base,
       soakers: [{ id: 'n', kind: 'sunflower', dryPercent: percent!, waterRatio: 0.5 }],
     })
     expect(r.soakers[0]?.dry).toBeCloseTo(100, 6)
     expect(r.doughWeight).toBeCloseTo(1800, 6)
 
     const oats = { id: null, kind: 'oats' as const, waterRatio: 2 }
-    expect(soakerDryPercentForGrams(pieces, oats, 100)).toBeCloseTo(9.844444, 5)
+    expect(soakerDryPercentForGrams(base, oats, 100)).toBeCloseTo(9.844444, 5)
     expect(soakerDryPercentForGrams(createDefaultState(), oats, 100)).toBeCloseTo(10, 9)
-    expect(soakerDryPercentForGrams(pieces, sunflower, 5000)).toBeNull()
+    expect(soakerDryPercentForGrams(base, sunflower, 5000)).toBeNull()
+  })
+
+  it('keeps soaker grams exact with a loss allowance', () => {
+    const base = pieces((s) => (s.lossPercent = 5))
+    const sunflower = { id: null, kind: 'sunflower' as const, waterRatio: 0.5 }
+    const percent = soakerDryPercentForGrams(base, sunflower, 100)
+    const r = calculateDough({
+      ...base,
+      soakers: [{ id: 'n', kind: 'sunflower', dryPercent: percent!, waterRatio: 0.5 }],
+    })
+    expect(r.soakers[0]?.dry).toBeCloseTo(100, 6)
+    expect(r.doughWeight).toBeCloseTo(1890, 6)
+  })
+})
+
+describe('fat', () => {
+  it('adds oil to the dough weight but not to the hydration', () => {
+    const r = calculateDough(state((s) => (s.fatPercent = 5)))
+    expect(r.main.fat).toBeCloseTo(50, 9)
+    expect(r.main.water).toBeCloseTo(630, 9)
+    expect(r.doughWeight).toBeCloseTo(1822, 9)
+    expect(r.summary.hydration).toBeCloseTo(75, 9)
+  })
+
+  it('is part of the dough weight when sizing by pieces', () => {
+    const r = calculateDough(
+      state((s) => {
+        s.sizingMode = 'pieces'
+        s.pieceCount = 5
+        s.pieceWeight = 380
+        s.lossPercent = 0
+        s.fatPercent = 3
+      }),
+    )
+    expect(r.doughWeight).toBeCloseTo(1900, 9)
+    expect(r.main.fat).toBeCloseTo((r.totalFlour * 3) / 100, 9)
   })
 })
 

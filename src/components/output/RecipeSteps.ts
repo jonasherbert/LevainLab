@@ -23,6 +23,13 @@ interface StepItem {
   amount: string
 }
 
+/** Zeile mit Grammangabe; null, wenn die Menge gerundet 0 ist (solche Zeilen entfallen). */
+const gramsItem = (label: string, grams: number, decimals = 0, extra = ''): StepItem | null =>
+  fmt.has(grams, decimals) ? { label, amount: `${fmt.grams(grams, decimals)}${extra}` } : null
+
+const present = (items: (StepItem | null)[]): StepItem[] =>
+  items.filter((item): item is StepItem => item !== null)
+
 interface StepView {
   key: string
   when: string
@@ -71,22 +78,34 @@ export default defineComponent({
       const proofHours = roomHours === null ? null : Math.min(f.proofHours, roomHours)
 
       // Ohne Triebmittel gibt es keinen Zeitplan; die Schritte erscheinen dann ohne Uhrzeit.
-      const plan: PlanStep[] = r.schedule?.steps ?? [
-        ...(r.soakers.length ? [{ kind: 'soakers' as const, refId: null }] : []),
+      const plan: PlanStep[] = r.schedule?.steps.slice() ?? [
+        ...(r.soakers.some((s) => fmt.has(s.dry))
+          ? [{ kind: 'soakers' as const, refId: null }]
+          : []),
         ...(r.starter ? [{ kind: 'starter' as const, refId: null }] : []),
-        ...r.vorteige.map((v) => ({ kind: 'vorteig' as const, refId: v.id })),
         { kind: 'mix', refId: null },
         { kind: 'bake', refId: null },
       ]
+      // Vorteige ohne Gärzeit (z. B. ohne Hefe) fehlen im Zeitplan; sie erscheinen ohne Uhrzeit
+      // vor dem Kneten, damit ihre Mengen und der Hinweis sichtbar bleiben.
+      const untimed = r.vorteige
+        .filter((v) => !plan.some((step) => step.kind === 'vorteig' && step.refId === v.id))
+        .map((v): PlanStep => ({ kind: 'vorteig', refId: v.id }))
+      const mixIndex = plan.findIndex((step) => step.kind === 'mix')
+      plan.splice(mixIndex < 0 ? plan.length : mixIndex, 0, ...untimed)
 
       const details = (step: PlanStep): Pick<StepView, 'items' | 'note'> => {
         switch (step.kind) {
           case 'soakers':
             return {
-              items: r.soakers.flatMap((s) => [
-                { label: soakerLabel(s.id), amount: fmt.grams(s.dry) },
-                { label: 'Wasser', amount: fmt.grams(s.water) },
-              ]),
+              items: present(
+                r.soakers
+                  .filter((s) => fmt.has(s.dry))
+                  .flatMap((s) => [
+                    gramsItem(soakerLabel(s.id), s.dry),
+                    gramsItem('Wasser', s.water),
+                  ]),
+              ),
               note: null,
             }
           case 'starter': {
@@ -94,11 +113,11 @@ export default defineComponent({
             if (!s) return { items: [], note: null }
             const reserve = s.reserve > 0 ? `, ${fmt.grams(s.reserve)} bleiben als Anstellgut` : ''
             return {
-              items: [
-                { label: 'Anstellgut', amount: fmt.grams(s.seed) },
-                { label: 'Mehl', amount: fmt.grams(s.feedFlour) },
-                { label: 'Wasser', amount: fmt.grams(s.feedWater) },
-              ],
+              items: present([
+                gramsItem('Anstellgut', s.seed),
+                gramsItem('Mehl', s.feedFlour),
+                gramsItem('Wasser', s.feedWater),
+              ]),
               note:
                 `Reif nach ca. ${fmt.hours(r.starterProfile.ripeningHours)} bei ` +
                 `${fmt.temp(r.starterProfile.temp)}. ${fmt.grams(s.forRecipe)} kommen in den Teig${reserve}.`,
@@ -108,11 +127,11 @@ export default defineComponent({
             const v = r.vorteige.find((item) => item.id === step.refId)
             if (!v) return { items: [], note: null }
             return {
-              items: [
-                { label: 'Mehl', amount: fmt.grams(v.flour) },
-                { label: 'Wasser', amount: fmt.grams(v.water) },
-                { label: 'Frischhefe', amount: fmt.grams(v.yeast, 2) },
-              ],
+              items: present([
+                gramsItem('Mehl', v.flour),
+                gramsItem('Wasser', v.water),
+                gramsItem('Frischhefe', v.yeast, 2),
+              ]),
               note:
                 v.hours === null
                   ? 'Ohne Hefe bzw. Gärzeit gärt der Vorteig nicht.'
@@ -122,26 +141,22 @@ export default defineComponent({
           case 'mix': {
             const m = r.main
             const waterTemp = r.waterTemperature.waterTemp
-            const items: StepItem[] = [
-              {
-                label: 'Wasser',
-                amount:
-                  waterTemp === null
-                    ? fmt.grams(m.water)
-                    : `${fmt.grams(m.water)} · ${fmt.temp(waterTemp)}`,
-              },
-              ...(r.starter
-                ? [{ label: 'Sauerteig', amount: fmt.grams(r.starter.forRecipe) }]
-                : []),
-              ...r.vorteige.map((v) => ({ label: vorteigLabel(v.id), amount: fmt.grams(v.total) })),
-              { label: 'Mehl', amount: fmt.grams(m.flour) },
-              ...r.soakers.map((s) => ({ label: soakerLabel(s.id), amount: fmt.grams(s.total) })),
-              ...(fmt.has(m.salt, 1) ? [{ label: 'Salz', amount: fmt.grams(m.salt, 1) }] : []),
-              ...(fmt.has(m.yeast, 1)
-                ? [{ label: 'Frischhefe', amount: fmt.grams(m.yeast, 1) }]
-                : []),
-              ...(fmt.has(m.malt, 1) ? [{ label: 'Malz', amount: fmt.grams(m.malt, 1) }] : []),
-            ]
+            const items = present([
+              gramsItem(
+                'Wasser',
+                m.water,
+                0,
+                waterTemp === null ? '' : ` · ${fmt.temp(waterTemp)}`,
+              ),
+              r.starter ? gramsItem('Sauerteig', r.starter.forRecipe) : null,
+              ...r.vorteige.map((v) => gramsItem(vorteigLabel(v.id), v.total)),
+              gramsItem('Mehl', m.flour),
+              ...r.soakers.map((s) => gramsItem(soakerLabel(s.id), s.total)),
+              gramsItem('Salz', m.salt, 1),
+              gramsItem('Frischhefe', m.yeast, 1),
+              gramsItem('Malz', m.malt, 1),
+              gramsItem('Öl/Fett', m.fat, 1),
+            ])
             const stockHours =
               roomHours === null
                 ? null

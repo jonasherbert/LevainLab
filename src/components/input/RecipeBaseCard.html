@@ -27,23 +27,33 @@
       label="Gesamtmehl"
       suffix="g"
     />
-    <v-row v-else density="comfortable">
-      <v-col cols="6">
+    <v-row v-else density="comfortable" data-testid="pieces">
+      <v-col cols="4">
         <NumberField v-model="store.pieceCount" v-bind="fields.pieceCount" label="Anzahl" />
       </v-col>
-      <v-col cols="6">
+      <v-col cols="4">
         <NumberField
           v-model="store.pieceWeight"
           v-bind="fields.pieceWeight"
-          label="Teig je Stück"
+          label="Gewicht"
           suffix="g"
-          :hint="`ergibt ${fmt.grams(result.totalFlour)} Mehl`"
         />
+      </v-col>
+      <v-col cols="4">
+        <NumberField
+          v-model="store.lossPercent"
+          v-bind="fields.lossPercent"
+          label="Verlust"
+          suffix="%"
+        />
+      </v-col>
+      <v-col cols="12" class="mt-n3 pt-0 pb-3">
+        <div class="text-body-medium text-medium-emphasis">{{ piecesText }}</div>
       </v-col>
     </v-row>
 
     <v-row density="comfortable">
-      <v-col cols="4">
+      <v-col cols="6" sm="3">
         <NumberField
           v-model="store.targetHydration"
           v-bind="fields.targetHydration"
@@ -51,7 +61,7 @@
           suffix="%"
         />
       </v-col>
-      <v-col cols="4">
+      <v-col cols="6" sm="3">
         <NumberField
           v-model="store.saltPercent"
           v-bind="fields.saltPercent"
@@ -59,11 +69,19 @@
           suffix="%"
         />
       </v-col>
-      <v-col cols="4">
+      <v-col cols="6" sm="3">
         <NumberField
           v-model="store.maltPercent"
           v-bind="fields.maltPercent"
           label="Malz"
+          suffix="%"
+        />
+      </v-col>
+      <v-col cols="6" sm="3">
+        <NumberField
+          v-model="store.fatPercent"
+          v-bind="fields.fatPercent"
+          label="Öl/Fett"
           suffix="%"
         />
       </v-col>

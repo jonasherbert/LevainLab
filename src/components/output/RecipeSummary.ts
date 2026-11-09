@@ -14,9 +14,10 @@ export default defineComponent({
       const { summary, leavening } = r
       const fridgeHours = store.fermentation.fridgeHours
       const withSeeds = summary.hydrationInclSeedWater > summary.hydration + 0.05
+      const allowance = summary.lossPercent ? ` + ${fmt.compact(summary.lossPercent, '%')}` : ''
       const pieces =
         summary.pieceCount !== null && summary.pieceWeight !== null
-          ? `${summary.pieceCount} × ${fmt.grams(summary.pieceWeight)}`
+          ? `${summary.pieceCount} × ${fmt.grams(summary.pieceWeight)}${allowance}`
           : null
       return [
         {
